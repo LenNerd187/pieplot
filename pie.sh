@@ -1,12 +1,26 @@
 #!/usr/bin/env bash
 
-# data is expected with title in the first row
-# from the second row on: 1 row = 1 slice
-# label in first columns and value in second column separated by ';'
-# line breaks in label are possible with \n    Example:
-# Disk Usage - Data2
-# Used:\n 1031 GB;1031567272
-# Free:\n 345 GB;345132256
+
+usage(){
+    echo "
+USAGE: $0 [filename]
+
+  Creates a gnuplot script to generate a pie chart.
+  Output can be piped directly into gnuplot.
+  If no filename is given, data is read from stdin.
+
+  Data format:
+  The first row is used as title for the pie chart
+  Every other row is a data entry with the label in the first column
+  and the value in the second column, separated by ;
+  Line breaks in labels and title are possible with \n 
+
+  Datafile Example:
+  Disk Usage - Data2
+  Used:\n 1031 GB;1031567272
+  Free:\n 345 GB;345132256
+"
+}
 
 colors[0]="#008DD5"
 colors[1]="#B9D7E7"
@@ -31,6 +45,13 @@ for color in ${colors[@]}; do
     fi
 done
 
+
+if [[ "$1" =~ (-h|--help) ]];then
+    usage
+    exit 0
+fi
+
+# Read the data from file or stdin setting title, labels and values
 while read -r line ; do 
     if [ -z "$title" ]; then
         title="$line"
@@ -53,10 +74,11 @@ for value in ${values[@]};do
     ratios+=( $( echo "$value / $sum" | bc -l ) )
 done
 
+
+# print script for gnuplot
 echo "set terminal pngcairo font \"Helvetica,18\" size 800,600"
 echo "set output \"out.png\""
 printf "set title \"%s\"\n" "$title"
-
 # a:height B:label distance r:radius s:height over ground
 echo "a=0.6; B=0.3; r=1.0; s=0.15"
 echo "set view 60, 0; set parametric"
