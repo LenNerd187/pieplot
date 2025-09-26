@@ -3,7 +3,7 @@
 
 usage(){
     echo "
-USAGE: $0 [filename]
+USAGE: $0 [datafile]
 
   Creates a gnuplot script to generate a pie chart.
   Output can be piped directly into gnuplot.
@@ -96,28 +96,29 @@ echo "splot -2+4*u, -2+4*v, 0 w pm3d"
 echo "# draw pie shadow"
 echo "splot cos(u*2*pi)*v, sin(u*2*pi)*v, 0 w pm3d fillcolor rgb 'dark-grey'"
 
+
 # draw labels first, otherwise they are invisible (idk why)
 echo "# draw labels"
 d=${ratios[0]}
 for ((j=0;j<count;j++)); do
-    printf "set label %d \"%s\" at cos(%g*pi)*B+cos(%g*pi), sin(%g*pi)*B+sin(%g*pi), 0.7+sin(%g*pi)*B+sin(%g*pi) centre\n" $((j+1)) "${labels[j]}" $d $d $d $d $d $d
+    printf "set label %d \"%s\" at cos(%g*pi)*B+cos(%g*pi), -sin(%g*pi)*B-sin(%g*pi), 0.1-sin(%g*pi)*0.8*B-sin(%g*pi) centre\n" $((j+1)) "${labels[j]}" $d $d $d $d $d $d
     d=$( echo "$d+${values[j]}/$sum + ${values[$((j+1))]}/$sum" | bc -l 2>/dev/null)
 done
 
 echo "# draw cylinder wall"
-d=0.0
-for ((j=0;j<count;j++)); do
-    printf "set urange [%s:%g]\n" $d $(echo "$d+${ratios[j]}" | bc -l)
-    [ "$d" != "1.0" ] && echo "splot cos(u*2*pi)*r, sin(u*2*pi)*r, s+v*a w pm3d fillcolor rgb '${colors_shadow[j]}'"
-    d=$( echo "$d+${ratios[j]}" | bc -l)
+d=1.0
+for ((j=count-1;j>=0;j--)); do
+    printf "set urange [%s:%g]\n" $(echo "$d-${ratios[j]}" | bc -l) $d
+    [ "$d" != "0.0" ] && echo "splot cos(u*2*pi)*r, -sin(u*2*pi)*r, s+v*a w pm3d fillcolor rgb '${colors_shadow[j]}'"
+    d=$( echo "$d-${ratios[j]}" | bc -l)
 done
 
 echo "# draw cylinder top"
 d=0.0;
-for ((j=0;j<count;j++)); do
-    printf "set urange [%s:%g]\n" $d $(echo "$d+${ratios[j]}" | bc -l)
-    echo "splot cos(u*2*pi)*r*v, sin(u*2*pi)*r*v, s+a w pm3d fillcolor rgb '${colors[j]}'"
-    d=$( echo "$d+${ratios[j]}" | bc -l)
+for ((j=count-1;j>=0;j--)); do
+    printf "set urange [%s:%g]\n" $(echo "$d-${ratios[j]}" | bc -l) $d
+    echo "splot cos(u*2*pi)*r*v, -sin(u*2*pi)*r*v, s+a w pm3d fillcolor rgb '${colors[j]}'"
+    d=$( echo "$d-${ratios[j]}" | bc -l)
 done
 
 
