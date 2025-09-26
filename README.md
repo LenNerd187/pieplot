@@ -4,8 +4,8 @@ Small bash tool that outputs a gnuplot script to generate a pie plot.
 It uses gnuplots `splot` function to draw cylinder sections in different colors
 and adds a label next to each section.
 
-![pie1](examples/disk_root.png)
-![pie2](examples/pie_ingredients.png)
+<img src="examples/disk_root.png" alt="pie_disk" width="300">
+<img src="examples/pie_ingredients.png" alt="pie_pie" width="300">
 
 ```
 USAGE: ./pieplot [OPTIONS] [DATAFILE]
