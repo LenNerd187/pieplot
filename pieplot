@@ -3,11 +3,14 @@
 
 usage(){
     echo "
-USAGE: $0 [datafile]
+USAGE: $0 [OPTIONS] [DATAFILE]
 
   Creates a gnuplot script to generate a pie chart.
   Output can be piped directly into gnuplot.
   If no filename is given, data is read from stdin.
+
+  Example:
+    $0 data.csv | gnuplot
 
   Data format:
   The first row is used as title for the pie chart
@@ -19,6 +22,20 @@ USAGE: $0 [datafile]
   Disk Usage - Data2
   Used:\n 1031 GB;1031567272
   Free:\n 345 GB;345132256
+
+  Options:
+    -o, --output <filename>     [default: out.png]
+        Sets the filename for the final image.
+        The output of this program is still written to stdout.
+
+    -s, --size <size>           [default: 800,600]
+        Sets the image size in pixel.
+
+    --fontsize <size>           [default: 18]
+        Sets the font size for the slice labels
+
+    --title-fontsize <size>     [default: 24]
+        Sets the font size for the slice labels
 "
 }
 
@@ -45,11 +62,60 @@ for color in ${colors[@]}; do
     fi
 done
 
+output_file="out.png"
+size="800,600"
+fontsize=18
+titlefontsize=24
 
-if [[ "$1" =~ (-h|--help) ]];then
-    usage
-    exit 0
+
+# handle dashed arguments and remove them from $@
+POSITIONAL_ARGS=()
+while [[ $# -gt 0 ]]; do
+    case $1 in
+        -h|--help)
+            usage
+            exit 0;;
+        -o|--output)
+            if [ -z "$2" ]; then
+                echo "Error: no output filename given" >&2 ; exit 2
+            fi
+            output_file="$2"
+            shift;shift;;
+        -s|--size)
+            if [ -z "$2" ]; then
+                echo "Error: no size specified" >&2 ; exit 2
+            fi
+            size="$2"
+            shift;shift;;
+        --fontsize)
+            if [ -z "$2" ]; then
+                echo "Error: no size specified" >&2 ; exit 2
+            fi
+            fontsize="$2"
+            shift;shift;;
+        --title-fontsize)
+            if [ -z "$2" ]; then
+                echo "Error: no size specified" >&2 ; exit 2
+            fi
+            titlefontsize="$2"
+            shift;shift;;
+        -*)
+            echo "Unknown option $1"; exit 1;;
+        *)
+            POSITIONAL_ARGS+=("$1") # save positional arg
+            shift ;;
+    esac
+done
+set -- "${POSITIONAL_ARGS[@]}" # restore positional arguments
+
+# handle positional arguments
+if [ -n "$1" ]; then
+    input_file="$1"
+else
+    input_file="/dev/stdin"
 fi
+echo "reading from $input_file" >&2
+
 
 # Read the data from file or stdin setting title, labels and values
 while read -r line ; do 
@@ -66,7 +132,7 @@ while read -r line ; do
             ((sum=sum+value))
         fi
     fi
-done < "${1:-/dev/stdin}"
+done < "${input_file:-/dev/stdin}"
 echo "found $count values with a sum of $sum" >&2
 
 # gnuplot needs the values normalized, the whole pie has the value of 1
@@ -76,9 +142,9 @@ done
 
 
 # print script for gnuplot
-echo "set terminal pngcairo font \"Helvetica,18\" size 800,600"
-echo "set output \"out.png\""
-printf "set title \"%s\" font \"Helvetica,24\"\n" "$title"
+printf 'set terminal pngcairo font "Helvetica,%d" size %s\n' $fontsize "$size"
+printf 'set output "%s"\n' $output_file
+printf 'set title "%s" font "Helvetica,%d"\n' "$title" $titlefontsize
 # a:height B:label distance r:radius s:height over ground
 echo "a=0.6; B=1.3; r=1.0; s=0.15"
 echo "set view 60, 0; set parametric"
