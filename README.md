@@ -43,3 +43,7 @@ USAGE: ./pieplot [OPTIONS] [DATAFILE]
         Sets the font size for the slice labels
 
 ```
+
+Based on this work:
+[Gnuplot tricks: Pie charts](http://www.phyast.pitt.edu/~zov1/gnuplot/html/pie.html)
+They also have donuts if you are not into pie.
