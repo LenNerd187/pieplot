@@ -44,6 +44,9 @@ USAGE: ./pieplot [OPTIONS] [DATAFILE]
 
 ```
 
-Based on this work:
+Based on this chapter
 [Gnuplot tricks: Pie charts](http://www.phyast.pitt.edu/~zov1/gnuplot/html/pie.html)
-They also have donuts if you are not into pie.
+on the website 
+[Impossible Gnuplot Graphs](http://www.phyast.pitt.edu/~zov1/gnuplot/html/intro.html) by Zoltán Vörös.
+
+They also have donuts, bubbles and bar graphs.
