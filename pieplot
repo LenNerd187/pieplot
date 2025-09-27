@@ -153,6 +153,7 @@ echo "unset border; unset tics; unset key; unset colorbox"
 echo "set ticslevel 0"
 echo "set urange [0:1]; set vrange [0:1]"
 echo "set xrange [-1:1]; set yrange [-1:1]; set zrange [0:2.5]"
+echo "set cbrange [0:2*pi]"
 echo "set multiplot"
 
 echo "# draw ground square (currently white because i dont like it)"
